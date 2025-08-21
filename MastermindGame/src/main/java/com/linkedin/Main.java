@@ -1,5 +1,7 @@
 package com.linkedin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -30,6 +32,7 @@ public class Main {
 
     public static void Game(int[] secret) {
         boolean guessed = false;
+        List<String> history = new ArrayList<>(); // to store the history
 
         for (int attempt = 1; attempt <= 10; attempt++) {
             int[] guess = getUserGuess(attempt);
@@ -38,16 +41,31 @@ public class Main {
             int correctPosition = result[0];
             int correctNumber = result[1];
 
+            String feedback = "";
             if (correctPosition == 4) {
-                System.out.println("\"Congratulations! You guessed the secret code!\"");
+                feedback = "\"Congratulations! You guessed the secret code!\"";
+                history.add(attempt + ") Guess: "  + arrayToString(guess) + ". Win!");
+                System.out.println(feedback);
                 guessed = true;
                 break;
             } else if (correctPosition == 0 && correctNumber == 0) {
-                System.out.println("All incorrect");
+                feedback = "All incorrect";
             } else {
                 String locText = correctPosition == 1 ? "1 correct location" : correctPosition + " correct locations";
                 String numText = correctNumber == 1 ? "1 correct number" : correctNumber + " correct numbers";
-                System.out.printf(numText + " and " + locText);
+                feedback = numText + " and " + locText;
+            }
+
+            // Save history
+            history.add(attempt + ") Guess: " + arrayToString(guess) + " Feedback: " + feedback);
+
+            // Print current feedback
+            System.out.println(feedback);
+
+            // Print full history
+            System.out.println("\nHistory so far:");
+            for (String h : history) {
+                System.out.println(h);
             }
 
         }
@@ -106,6 +124,14 @@ public class Main {
             }
 
             return new int[]{correctPosition, correctNumber};
+        }
+
+        public static String arrayToString(int[] arr) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i : arr) {
+                stringBuilder.append(i);
+            }
+            return stringBuilder.toString();
         }
 
 }
