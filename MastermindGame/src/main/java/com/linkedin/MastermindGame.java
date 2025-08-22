@@ -2,6 +2,7 @@ package com.linkedin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 import static com.linkedin.GuessChecker.checkGuess;
@@ -16,6 +17,7 @@ public class MastermindGame {
     private int numDigits;
     private int minDigits;
     private int maxDigits;
+    private List<Integer> hintIndicesRemaining; // for unique hints
 
 
     public MastermindGame(int difficultyLevel) {
@@ -31,6 +33,12 @@ public class MastermindGame {
         }
 
         this.inputHandler = new InputHandler(numDigits, minDigits, maxDigits);
+
+        //initialize indices for hints
+        hintIndicesRemaining = new ArrayList<>();
+        for (int i = 0; i < secret.length; i++) {
+            hintIndicesRemaining.add(i);
+        }
     }
 
     public void start() {
@@ -71,6 +79,21 @@ public class MastermindGame {
                 System.out.println(h);
             }
 
+            if (attempt == 4 || attempt == 6 || attempt == 8) {
+                System.out.println("Would you like a hint? (Y/N)");
+                String hintOption = scanner.nextLine().trim().toUpperCase();
+                while (!hintOption.equals("Y") && !hintOption.equals("N")) {
+                    System.out.println("Invalid input. Enter 'Y' or 'N':");
+                    hintOption= scanner.nextLine().trim().toUpperCase();
+                }
+
+                if (hintOption.equals("Y")) {
+                    String hint = giveHint();
+                    System.out.println(hint);
+                    history.add(("Hint: " + hint));
+                }
+            }
+
         }
         if (!guessed) {
             System.out.println("\nGame over! The secret code was: ");
@@ -89,5 +112,12 @@ public class MastermindGame {
             and whether it is in the correct location.
             Good luck!
             """, numDigits, minDigits, maxDigits);
+    }
+
+    private String giveHint() {
+        Random random = new Random();
+        int index = random.nextInt(hintIndicesRemaining.size()); // random position
+        int secretIndex = hintIndicesRemaining.remove(index);
+       return "Hint: One of the digits is: " + secret[secretIndex];
     }
 }
