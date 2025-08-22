@@ -5,11 +5,11 @@ public class GuessChecker {
         int correctPosition = 0;
         int correctNumber = 0;
 
-        boolean[] secretUsed = new boolean[4];
-        boolean[] guessUsed = new boolean[4];
+        boolean[] secretUsed = new boolean[secret.length];
+        boolean[] guessUsed = new boolean[guess.length];
 
         // correct position & correct number
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < secret.length; i++) {
             if (guess[i] == secret[i]) {
                 correctPosition++;
                 correctNumber++;
@@ -19,9 +19,9 @@ public class GuessChecker {
         }
 
         // correct number & wrong position
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < guess.length; i++) {
             if (!guessUsed[i]) {
-                for (int j = 0; j < 4; j++) {
+                for (int j = 0; j < secret.length; j++) {
                     if (!secretUsed[j] && guess[i] == secret[j]) {
                         correctNumber++;
                         secretUsed[j] = true;

@@ -12,24 +12,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class RandomOrgSecretNumbers {
-    public static int[] generateSecretNumbers() {
+    public static int[] generateSecretNumbers(int num, int min, int max) {
         try {
             // API recommended parameters
             String apiKey = ConfigLoader.getApiKey();
-            int num = 4;
-            int min = 0;
-            int max = 7;
-            int col = 1;
-            String base = "10";
-            String format = "plain";
-            String rnd = "new";
-
-            // Connect to URL
-            URL url = new URL("https://api.random.org/json-rpc/4/invoke");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
 
             // JSON request body
             JSONObject requestJson = new JSONObject();
@@ -45,10 +31,15 @@ public class RandomOrgSecretNumbers {
             requestJson.put("params", params);
             requestJson.put("id", 42);
 
-            // Send JSON
+            // Connect to URL
+            URL url = new URL("https://api.random.org/json-rpc/4/invoke");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/json");
+
             try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = requestJson.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);
+                os.write(requestJson.toString().getBytes("utf-8"));
             }
 
             // Read response
