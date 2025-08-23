@@ -1,9 +1,6 @@
 package com.linkedin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 import static com.linkedin.GuessChecker.checkGuess;
 import static com.linkedin.Utils.arrayToString;
@@ -15,24 +12,24 @@ public class MastermindGame {
     private boolean guessed = false;
     private InputHandler inputHandler;
     private int numDigits;
-    private int minDigits;
-    private int maxDigits;
+    private int minDigit;
+    private int maxDigit;
     private List<Integer> hintIndicesRemaining; // for unique hints
 
+    private static final List<Integer> HINT_ATTEMPTS = Arrays.asList(5,7,9);
 
-    public MastermindGame(int difficultyLevel) {
-        switch (difficultyLevel) {
-            case 1 -> {numDigits = 4; minDigits = 0; maxDigits = 7 ;} //easy
-            case 2 -> {numDigits = 4; minDigits = 0; maxDigits = 9 ;}
-            case 3 -> {numDigits = 5; minDigits = 0; maxDigits = 9 ;}//medium
-        }
 
-        this.secret = RandomOrgSecretNumbers.generateSecretNumbers(numDigits, minDigits, maxDigits);
+    public MastermindGame(int numDigits, int minDigit, int maxDigit) {
+        this.numDigits = numDigits;
+        this.minDigit = minDigit;
+        this.maxDigit = maxDigit;
+
+        this.secret = RandomOrgSecretNumbers.generateSecretNumbers(numDigits, minDigit, maxDigit);
         if (this.secret == null) {
             throw  new RuntimeException("Error generating numbers.");
         }
 
-        this.inputHandler = new InputHandler(numDigits, minDigits, maxDigits);
+        this.inputHandler = new InputHandler(numDigits, minDigit, maxDigit);
 
         //initialize indices for hints
         hintIndicesRemaining = new ArrayList<>();
@@ -46,52 +43,15 @@ public class MastermindGame {
 
 
         for (int attempt = 1; attempt <= 10; attempt++) {
-            int[] guess = inputHandler.getUserGuess(scanner, attempt);
-            int[] result = checkGuess(secret, guess);
+            playAttempt(attempt);
 
-            int correctPosition = result[0];
-            int correctNumber = result[1];
-
-            String feedback = "";
-            if (correctPosition == numDigits) {
-                feedback = "\"Congratulations! You guessed the secret code!\"";
-                history.add(attempt + ") Guess: "  + arrayToString(guess) + ". Win!");
-                System.out.println(feedback);
-                guessed = true;
+            if (guessed) {
                 break;
-            } else if (correctPosition == 0 && correctNumber == 0) {
-                feedback = "All incorrect";
-            } else {
-                String locText = correctPosition == 1 ? "1 correct location" : correctPosition + " correct locations";
-                String numText = correctNumber == 1 ? "1 correct number" : correctNumber + " correct numbers";
-                feedback = numText + " and " + locText;
             }
 
-            // Save history
-            history.add(attempt + ") Guess: " + arrayToString(guess) + ". Feedback: " + feedback);
-
-            // Print current feedback
-            System.out.println(feedback);
-
-            // Print full history
-            System.out.println("\nHistory so far:");
-            for (String h : history) {
-                System.out.println(h);
-            }
-
-            if (attempt == 4 || attempt == 6 || attempt == 8) {
-                System.out.println("Would you like a hint? (Y/N)");
-                String hintOption = scanner.nextLine().trim().toUpperCase();
-                while (!hintOption.equals("Y") && !hintOption.equals("N")) {
-                    System.out.println("Invalid input. Enter 'Y' or 'N':");
-                    hintOption= scanner.nextLine().trim().toUpperCase();
-                }
-
-                if (hintOption.equals("Y")) {
-                    String hint = giveHint();
-                    System.out.println(hint);
-                    history.add(("Hint: " + hint));
-                }
+            // offer hint
+            if (HINT_ATTEMPTS.contains(attempt)) {
+                askForHint();
             }
 
         }
@@ -103,6 +63,65 @@ public class MastermindGame {
         }
     }
 
+    private void playAttempt(int attempt) {
+        int[] guess = inputHandler.getUserGuess(scanner, attempt);
+        int[] result = checkGuess(secret, guess);
+
+        int correctPosition = result[0];
+        int correctNumber = result[1];
+
+        String feedback = formatFeedback(correctPosition,correctNumber);
+
+        // Save history
+        history.add(attempt + ") Guess: " + arrayToString(guess) + ". Feedback: " + feedback);
+
+        // Print current feedback
+        System.out.println(feedback);
+        printHistory();
+
+        // Check for win
+        if (correctPosition == numDigits) {
+            System.out.println("Congratulations! You guessed the secret code!");
+            guessed = true;
+        }
+
+
+    }
+
+    private void askForHint() {
+        System.out.println("Would you like a hint? (Y/N)");
+        String hintOption = scanner.nextLine().trim().toUpperCase();
+        while (!hintOption.equals("Y") && !hintOption.equals("N")) {
+            System.out.println("Invalid input. Enter 'Y' or 'N':");
+            hintOption= scanner.nextLine().trim().toUpperCase();
+        }
+
+        if (hintOption.equals("Y")) {
+            String hint = giveHint();
+            System.out.println(hint);
+            history.add(("Hint: " + hint));
+        }
+    }
+
+    private String formatFeedback(int correctPosition, int correctNumber) {
+
+        if (correctPosition ==0 && correctNumber ==0) {
+            return "All incorrect";
+        }
+
+        String locText = correctPosition == 1 ? "1 correct location" : correctPosition + " correct locations";
+        String numText = correctNumber == 1 ? "1 correct number" : correctNumber + " correct numbers";
+        return   numText + " and " + locText;
+    }
+
+    private void printHistory() {
+        // Print full history
+        System.out.println("\nHistory so far:");
+        for (String h : history) {
+            System.out.println(h);
+        }
+    }
+
     private void printIntro() {
         System.out.printf("""
             Welcome to Mastermind Game!
@@ -111,7 +130,7 @@ public class MastermindGame {
             After each attempt, you will receive feedback on whether you guessed a number correctly,
             and whether it is in the correct location.
             Good luck!
-            """, numDigits, minDigits, maxDigits);
+            """, numDigits, minDigit, maxDigit);
     }
 
     private String giveHint() {

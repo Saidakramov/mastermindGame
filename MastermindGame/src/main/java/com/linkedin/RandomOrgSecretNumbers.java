@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Random;
 
 public class RandomOrgSecretNumbers {
     public static int[] generateSecretNumbers(int num, int min, int max) {
@@ -66,8 +67,18 @@ public class RandomOrgSecretNumbers {
             return numbers;
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            System.out.println("Random.org failed, using local random generator.");
+            return generateLocalRndNum(num, min, max);
         }
+    }
+
+    public static int[] generateLocalRndNum(int num, int min, int max) {
+        Random random = new Random();
+        int[] numbers = new int[num];
+
+        for (int i = 0; i <num; i++) {
+            numbers[i] = random.nextInt(max - min + 1) + min;
+        }
+        return numbers;
     }
 }
